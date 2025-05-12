@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
+import { UserSignup } from '../services';
 
 const AuthPage = () => {
-  const theme = useSelector((state) => state.theme.theme); // 'light' or 'dark'
+  const theme = useSelector((state) => state.theme.theme); 
   const isDark = theme === 'dark';
 
   const [isLogin, setIsLogin] = useState(true);
@@ -71,7 +72,10 @@ const AuthPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Submitting form:', formData);
+      UserSignup(formData.name,formData.email,formData.phone,formData.password).then((result)=>{
+            console.log(result);
+            
+      })
     }
   };
 
