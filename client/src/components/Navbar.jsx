@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleTheme } from '../features/themeSlice'; // adjust the path as needed
-
+import { toggleTheme } from '../features/themeSlice';
+import {useNavigate} from 'react-router-dom'
 const Navbar = () => {
   const theme = useSelector((state) => state.theme.theme);
   const dispatch = useDispatch();
@@ -9,6 +9,8 @@ const Navbar = () => {
   const handleToggleTheme = () => {
     dispatch(toggleTheme());
   };
+  
+  const navigate = useNavigate()
 
   return (
     <nav className={`w-full px-6 py-4 flex justify-between items-center shadow-md transition-colors duration-300 
@@ -26,7 +28,7 @@ const Navbar = () => {
           {theme === 'light' ? 'Dark' : 'Light'} Mode
         </button>
 
-        <button className="px-3 py-2 rounded border border-indigo-500 text-indigo-500 hover:bg-indigo-500 hover:text-white transition">
+        <button onClick={()=>navigate('/auth')} className="px-3 py-2 rounded border border-indigo-500 text-indigo-500 hover:bg-indigo-500 hover:text-white transition">
           Login
         </button>
       </div>

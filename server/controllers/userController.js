@@ -27,7 +27,7 @@ export const uesrSignup=async(req,res)=>{
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = new User({
-      name,
+      name, 
       email,
       phone,
       password: hashedPassword,
@@ -95,3 +95,16 @@ export const userLogin=async(req,res)=>{
         
     }
 }
+
+export const getUserData = async (req, res) => {
+  try {
+
+    const userData = await User.find();
+    console.log(userData); 
+
+    res.status(200).json({ users: userData });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" }); 
+  }
+};

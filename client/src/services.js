@@ -30,3 +30,24 @@ export const UserLogin =(email,password)=>{
         })
     })
 }
+
+
+
+export const getUserData = async ()=>{
+    try{
+
+    const token = localStorage.getItem("token");
+     if (!token) {
+      throw new Error("No token found. Please login.");
+    }
+      const response = await axios.get("http://localhost:7000/users", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+     return response.data.users;
+    }catch(err){
+      console.log(err);
+      
+    }
+}
