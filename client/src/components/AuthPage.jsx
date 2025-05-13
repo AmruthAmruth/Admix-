@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { UserSignup } from '../services';
-
+import { UserLogin, UserSignup } from '../services';
+import { useSnackbar } from 'notistack';
 const AuthPage = () => {
-  const theme = useSelector((state) => state.theme.theme); 
+  const theme = useSelector((state) => state.theme.theme);
   const isDark = theme === 'dark';
-
+  const { enqueueSnackbar } = useSnackbar();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
@@ -69,26 +69,68 @@ const AuthPage = () => {
     return isValid;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      UserSignup(formData.name,formData.email,formData.phone,formData.password).then((result)=>{
-            console.log(result);
-            
-      })
+
+
+
+
+ const handleSubmit = (e) => {
+  e.preventDefault();
+
+  if (validateForm()) {
+    if (!isLogin) {
+  
+      UserSignup(formData.name, formData.email, formData.phone, formData.password)
+        .then((result) => {
+          console.log(result);
+
+          if (result.token) {
+            localStorage.setItem("token", result.token); 
+            enqueueSnackbar('Signup & Login successful!', { variant: 'success' });
+            window.location.href = "/"; 
+          } else {
+            enqueueSnackbar('Signup successful, but no token received.', { variant: 'warning' });
+          }
+        })
+        .catch((err) => {
+          if (err.response && err.response.status === 409) {
+            enqueueSnackbar('Email already exists. Please use a different email.', { variant: 'error' });
+          } else {
+            enqueueSnackbar('Signup failed. Please try again.', { variant: 'error' });
+          }
+        });
+    } else {
+     
+      UserLogin(formData.email, formData.password)
+        .then((result) => {
+          if (result.token) {
+            localStorage.setItem("token", result.token);
+            enqueueSnackbar('Login successful!', { variant: 'success' });
+            window.location.href = "/dashboard";
+          } else {
+            enqueueSnackbar('Login successful, but no token received.', { variant: 'warning' });
+          }
+        })
+        .catch((err) => {
+          enqueueSnackbar('Login failed. Please try again.', { variant: 'error' });
+          console.log(err);
+        });
     }
-  };
+  }
+};
+
+
+
+
+
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center px-4 py-12 ${
-        isDark ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'
-      }`}
+      className={`min-h-screen flex items-center justify-center px-4 py-12 ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'
+        }`}
     >
       <div
-        className={`max-w-md w-full space-y-8 p-8 rounded-2xl shadow-xl transition-all duration-300 ${
-          isDark ? 'bg-gray-800 text-white' : 'bg-white text-black'
-        }`}
+        className={`max-w-md w-full space-y-8 p-8 rounded-2xl shadow-xl transition-all duration-300 ${isDark ? 'bg-gray-800 text-white' : 'bg-white text-black'
+          }`}
       >
         <div className="text-center">
           <h1 className="text-3xl font-bold">
@@ -108,9 +150,8 @@ const AuthPage = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`mt-1 w-full px-3 py-2 rounded-lg border ${
-                    isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                  className={`mt-1 w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black'
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   type="text"
                 />
                 {errors.name && <p className="text-xs text-red-400 mt-1">{errors.name}</p>}
@@ -122,9 +163,8 @@ const AuthPage = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className={`mt-1 w-full px-3 py-2 rounded-lg border ${
-                    isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                  className={`mt-1 w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black'
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   type="text"
                 />
                 {errors.phone && <p className="text-xs text-red-400 mt-1">{errors.phone}</p>}
@@ -138,9 +178,8 @@ const AuthPage = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={`mt-1 w-full px-3 py-2 rounded-lg border ${
-                isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              className={`mt-1 w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black'
+                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
               type="email"
             />
             {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email}</p>}
@@ -152,9 +191,8 @@ const AuthPage = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={`mt-1 w-full px-3 py-2 rounded-lg border ${
-                isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              className={`mt-1 w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black'
+                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
               type="password"
             />
             {errors.password && <p className="text-xs text-red-400 mt-1">{errors.password}</p>}
@@ -167,9 +205,8 @@ const AuthPage = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`mt-1 w-full px-3 py-2 rounded-lg border ${
-                  isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black'
-                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className={`mt-1 w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black'
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 type="password"
               />
               {errors.confirmPassword && (
