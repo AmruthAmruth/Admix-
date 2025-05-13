@@ -32,7 +32,6 @@ export const UserLogin =(email,password)=>{
 }
 
 
-
 export const getUserData = async ()=>{
     try{
 
@@ -51,3 +50,24 @@ export const getUserData = async ()=>{
       
     }
 }
+
+
+export const updateUser = async (name, email, phone, password, job, profile) => {
+  return new Promise((resolve, reject) => {
+    axios
+      .post('http://localhost:7000/updateprofile', {
+        name,
+        email,
+        phone,
+        password,
+        job,
+        profile,
+      })
+      .then((res) => {
+        resolve(res.data);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};

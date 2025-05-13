@@ -108,3 +108,44 @@ export const getUserData = async (req, res) => {
     res.status(500).json({ message: "Server error" }); 
   }
 };
+
+
+export const updateProfile = async (req, res) => {
+  const { name, email, phone, password, job, profile } = req.body;
+  console.log("Req Body", req.body);
+
+  try {
+    // Check if required fields are present
+    if (!name || !email || !phone || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Find user by email
+    let user = await User.findOne({ email });
+   console.log(email);
+   
+    // If user doesn't exist, return an error
+    if (!user) {
+      console.log("User is not found");
+      
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update the user's profile
+    user.name = name;
+    user.phone = phone;
+    user.password = password;
+    user.job = job || user.job;  // Keep current job if not provided
+    user.profile = profile || user.profile;  // Keep current profile image if not provided
+
+    // Save the updated user
+    await user.save();
+
+    // Return success response with updated user
+    return res.status(200).json({ message: "Profile updated successfully", user });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "An error occurred while updating the profile", error: err.message });
+  }
+};
