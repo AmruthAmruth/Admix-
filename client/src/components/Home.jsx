@@ -2,56 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { getUserData } from '../services';
 
-const dummyUsers = [
-  {
-    id: 1,
-    name: 'Amruth Saiju',
-    email: 'amruth@example.com',
-    phone: '+91 98765 43210',
-    job: 'MERN Stack Developer',
-    image: 'https://img.freepik.com/free-photo/young-bearded-man-with-striped-shirt_273609-5677.jpg?t=st=1747028750~exp=1747032350~hmac=a0470f5170cd533d71a0d73e9fed00bec6a07676a500e28cd12a117a39dcec5d&w=1380',
-  },
-  {
-    id: 2,
-    name: 'Neha Sharma',
-    email: 'neha@example.com',
-    phone: '+91 91234 56789',
-    job: 'UI/UX Designer',
-    image: 'https://img.freepik.com/free-photo/young-bearded-man-with-striped-shirt_273609-5677.jpg?t=st=1747028750~exp=1747032350~hmac=a0470f5170cd533d71a0d73e9fed00bec6a07676a500e28cd12a117a39dcec5d&w=1380',
-  },
-  {
-    id: 3,
-    name: 'Rahul Verma',
-    email: 'rahul@example.com',
-    phone: '+91 99887 77665',
-    job: 'Backend Developer',
-    image: 'https://img.freepik.com/free-photo/young-bearded-man-with-striped-shirt_273609-5677.jpg?t=st=1747028750~exp=1747032350~hmac=a0470f5170cd533d71a0d73e9fed00bec6a07676a500e28cd12a117a39dcec5d&w=1380',
-  },
-   {
-    id: 1,
-    name: 'Amruth Saiju',
-    email: 'amruth@example.com',
-    phone: '+91 98765 43210',
-    job: 'MERN Stack Developer',
-    image: 'https://img.freepik.com/free-photo/young-bearded-man-with-striped-shirt_273609-5677.jpg?t=st=1747028750~exp=1747032350~hmac=a0470f5170cd533d71a0d73e9fed00bec6a07676a500e28cd12a117a39dcec5d&w=1380',
-  },
-  {
-    id: 2,
-    name: 'Neha Sharma',
-    email: 'neha@example.com',
-    phone: '+91 91234 56789',
-    job: 'UI/UX Designer',
-    image: 'https://img.freepik.com/free-photo/young-bearded-man-with-striped-shirt_273609-5677.jpg?t=st=1747028750~exp=1747032350~hmac=a0470f5170cd533d71a0d73e9fed00bec6a07676a500e28cd12a117a39dcec5d&w=1380',
-  },
-  {
-    id: 3,
-    name: 'Rahul Verma',
-    email: 'rahul@example.com',
-    phone: '+91 99887 77665',
-    job: 'Backend Developer',
-    image: 'https://img.freepik.com/free-photo/young-bearded-man-with-striped-shirt_273609-5677.jpg?t=st=1747028750~exp=1747032350~hmac=a0470f5170cd533d71a0d73e9fed00bec6a07676a500e28cd12a117a39dcec5d&w=1380',
-  },
-];
 
 const Home = () => {
   const theme = useSelector((state) => state.theme.theme);
@@ -67,7 +17,6 @@ const Home = () => {
   });
 }, []);
 
-console.log(users);
 
 
 

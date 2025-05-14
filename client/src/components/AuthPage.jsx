@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { UserLogin, UserSignup } from '../services';
 import { useSnackbar } from 'notistack';
+import { setUser } from '../features/userSlice';
+import { useNavigate } from 'react-router-dom';
+
 const AuthPage = () => {
   const theme = useSelector((state) => state.theme.theme);
   const isDark = theme === 'dark';
@@ -71,44 +74,35 @@ const AuthPage = () => {
 
 
 
+const dispatch = useDispatch()
+
+const navigate = useNavigate()
 
 
- const handleSubmit = (e) => {
+const handleSubmit = (e) => {
   e.preventDefault();
 
   if (validateForm()) {
     if (!isLogin) {
-  
       UserSignup(formData.name, formData.email, formData.phone, formData.password)
-        .then((result) => {
-          console.log(result);
-
-          if (result.token) {
-            localStorage.setItem("token", result.token); 
-            enqueueSnackbar('Signup & Login successful!', { variant: 'success' });
-            window.location.href = "/"; 
-          } else {
-            enqueueSnackbar('Signup successful, but no token received.', { variant: 'warning' });
-          }
+        .then((res) => {
+          dispatch(setUser(res.user));  // Redux gets updated here
+          enqueueSnackbar('Signup & Login successful!', { variant: 'success' });
+          navigate('/home'); // ✅ navigate instead of reload
         })
         .catch((err) => {
-          if (err.response && err.response.status === 409) {
+          if (err.response?.status === 409) {
             enqueueSnackbar('Email already exists. Please use a different email.', { variant: 'error' });
           } else {
             enqueueSnackbar('Signup failed. Please try again.', { variant: 'error' });
           }
         });
     } else {
-     
       UserLogin(formData.email, formData.password)
-        .then((result) => {
-          if (result.token) {
-            localStorage.setItem("token", result.token);
-            enqueueSnackbar('Login successful!', { variant: 'success' });
-            window.location.href = "/dashboard";
-          } else {
-            enqueueSnackbar('Login successful, but no token received.', { variant: 'warning' });
-          }
+        .then((res) => {
+          dispatch(setUser(res.user));  // Redux gets updated here
+          enqueueSnackbar('Login successful!', { variant: 'success' });
+          navigate('/home'); // ✅ navigate instead of reload
         })
         .catch((err) => {
           enqueueSnackbar('Login failed. Please try again.', { variant: 'error' });

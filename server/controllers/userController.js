@@ -2,110 +2,154 @@ import { User } from "../models/User.js";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
-export const uesrSignup=async(req,res)=>{
-    const {name,email,phone,password}=req.body
-    try{
-         if (!name || !email || !phone || !password) {
+export const uesrSignup = async (req, res) => {
+  const { name, email, phone, password } = req.body;
+  try {
+    if (!name || !email || !phone || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
-    if (password.length < 6) { 
+    if (password.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-     const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "Email already exists" });
     }
 
-     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({
-      name, 
-      email,
-      phone,
-      password: hashedPassword,
-    });
-
+    const newUser = new User({ name, email, phone, password: hashedPassword });
     await newUser.save();
 
     const token = jwt.sign(
       { id: newUser._id, email: newUser.email },
-   process.env.JWT_SECRET, 
+      process.env.JWT_SECRET,
       { expiresIn: "2h" }
     );
 
-    return res.status(201).json({ message: "User registered successfully", token });
-    
-       
-    }catch(err){
-      console.error("Signup error:", err);
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+      maxAge: 2 * 60 * 60 * 1000,
+    });
+
+    return res.status(201).json({
+      message: "User registered successfully",
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        phone: newUser.phone
+      },
+      token
+    });
+
+  } catch (err) {
+    console.error("Signup error:", err);
     return res.status(500).json({ message: "Server error" });
-        
-    }
-}
+  }
+};
 
 
-export const userLogin=async(req,res)=>{
-    const {email,password}=req.body
-    try{
-           if ( !email || !password) {
+export const userLogin = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    if (!email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
-    if (password.length < 6) { 
+    if (password.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-     const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
     if (!existingUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-     const passwordMatch = await bcrypt.compare(password, existingUser.password);
+    const passwordMatch = await bcrypt.compare(password, existingUser.password);
     if (!passwordMatch) {
       return res.status(401).json({ message: "Invalid password" });
     }
 
-
     const token = jwt.sign(
       { id: existingUser._id, email: existingUser.email },
-      process.env.JWT_SECRET, 
+      process.env.JWT_SECRET,
       { expiresIn: "2h" }
     );
 
-        return res.status(200).json({ message: "Login successful", token });
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+      maxAge: 2 * 60 * 60 * 1000,
+    });
 
+    return res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: existingUser._id,
+        name: existingUser.name,
+        email: existingUser.email,
+        phone: existingUser.phone
+      },
+      token
+    });
 
-
-    }catch(err){
-          console.log("Login error:", err);
+  } catch (err) {
+    console.log("Login error:", err);
     return res.status(500).json({ message: "Server error" });
-        
-    }
-}
+  }
+};
+
+
+
+
+export const userLogout = (req, res) => {
+  res.clearCookie("authToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Lax",
+  });
+  const token = req.cookies.authToken;
+  console.log("User Logout", token);
+
+  return res.status(200).json({ message: "Logout successful" });
+};
+
+
+
+
+
+
+
+
+
+
 
 export const getUserData = async (req, res) => {
   try {
 
     const userData = await User.find();
-    console.log(userData); 
+    console.log(userData);
 
     res.status(200).json({ users: userData });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" }); 
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -115,33 +159,27 @@ export const updateProfile = async (req, res) => {
   console.log("Req Body", req.body);
 
   try {
-    // Check if required fields are present
     if (!name || !email || !phone || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Find user by email
     let user = await User.findOne({ email });
-   console.log(email);
-   
-    // If user doesn't exist, return an error
+    console.log(email);
+
     if (!user) {
       console.log("User is not found");
-      
+
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Update the user's profile
     user.name = name;
     user.phone = phone;
     user.password = password;
-    user.job = job || user.job;  // Keep current job if not provided
-    user.profile = profile || user.profile;  // Keep current profile image if not provided
+    user.job = job || user.job;
+    user.profile = profile || user.profile;
 
-    // Save the updated user
     await user.save();
 
-    // Return success response with updated user
     return res.status(200).json({ message: "Profile updated successfully", user });
 
   } catch (err) {

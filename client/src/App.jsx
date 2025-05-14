@@ -5,22 +5,41 @@ import Footer from './components/Footer'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import UserProfile from './components/UserProfile';
 import AuthPage from './components/AuthPage';
+import { PublicRoute,PrivateRoute } from './middleware/PrivateRoute.js';
 const App = () => {
   return (
-    <div>
-      <Router> 
-        <Navbar/>
+     <div>
+      <Router>
+        <Navbar />
         <hr />
-         <Routes>
-         <Route path="/" element={<Home />} />
-  
-         <Route path="/profile" element={<UserProfile />} />
-          
-           <Route path="/auth" element={<AuthPage />} />
-         
-         </Routes>
-         <hr />
-          <Footer/>
+        <Routes>
+          <Route 
+            path="/home" 
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <PrivateRoute>
+                <UserProfile />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/" 
+            element={
+              <PublicRoute>
+                <AuthPage />
+              </PublicRoute>
+            } 
+          />
+        </Routes>
+        <hr />
+        <Footer />
       </Router>
     </div>
   )
