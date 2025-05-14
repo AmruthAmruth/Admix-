@@ -86,7 +86,8 @@ const handleSubmit = (e) => {
     if (!isLogin) {
       UserSignup(formData.name, formData.email, formData.phone, formData.password)
         .then((res) => {
-          dispatch(setUser(res.user));  // Redux gets updated here
+          dispatch(setUser(res.user)); 
+          localStorage.setItem("user", res.user); // Redux gets updated here
           enqueueSnackbar('Signup & Login successful!', { variant: 'success' });
           navigate('/home'); // ✅ navigate instead of reload
         })
@@ -100,7 +101,8 @@ const handleSubmit = (e) => {
     } else {
       UserLogin(formData.email, formData.password)
         .then((res) => {
-          dispatch(setUser(res.user));  // Redux gets updated here
+          dispatch(setUser(res.user)); 
+           localStorage.setItem("user", res.user); // Redux gets updated here
           enqueueSnackbar('Login successful!', { variant: 'success' });
           navigate('/home'); // ✅ navigate instead of reload
         })

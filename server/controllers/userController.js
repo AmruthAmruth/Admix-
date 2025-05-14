@@ -134,7 +134,29 @@ export const userLogout = (req, res) => {
 
 
 
+export const userProfile = async (req, res) => {
+  try {
+    const { email } = req.query;
+console.log(email);
 
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email })
+console.log("Is user data ",user);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("Error in userProfile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 
 
@@ -155,7 +177,7 @@ export const getUserData = async (req, res) => {
 
 
 export const updateProfile = async (req, res) => {
-  const { name, email, phone, password, job, profile } = req.body;
+  const { name, email, phone, password, work, profile } = req.body;
   console.log("Req Body", req.body);
 
   try {
@@ -172,13 +194,16 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     user.name = name;
     user.phone = phone;
-    user.password = password;
-    user.job = job || user.job;
+    user.password = hashedPassword;
+    user.work = work || user.job;
     user.profile = profile || user.profile;
 
     await user.save();
+console.log("Updated user ", user);
 
     return res.status(200).json({ message: "Profile updated successfully", user });
 

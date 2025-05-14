@@ -1,61 +1,90 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { updateUser } from '../services';
+import { updateUser, userProfile } from '../services';
 
 const UserProfile = () => {
     const theme = useSelector((state) => state.theme.theme);
+    const user = useSelector((state) => state.user.user);
 
-    const [userDetails, setUserDetails] = useState({
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '+91 9876543210',
-        work: 'Frontend Developer',
-        password: 'mypassword123',
-        profileImage:
-            'https://img.freepik.com/free-photo/young-bearded-man-with-striped-shirt_273609-5677.jpg?t=st=1747028750~exp=1747032350~hmac=a0470f5170cd533d71a0d73e9fed00bec6a07676a500e28cd12a117a39dcec5d&w=1380',
-    });
-
-    const [updatedDetails, setUpdatedDetails] = useState(userDetails);
+    const [userDetails, setUserDetails] = useState({});
+    const [updatedDetails, setUpdatedDetails] = useState({});
     const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        if (user?.email) {
+            userProfile(user.email)
+                .then((data) => {
+                    console.log("This is the response", data);
+                    setUserDetails(data);
+                    setUpdatedDetails(data);
+                })
+                .catch((err) => {
+                    console.error("Error fetching user profile:", err);
+                });
+        }
+    }, [user]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setUpdatedDetails({ ...updatedDetails, [name]: value });
     };
 
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setUpdatedDetails({ ...updatedDetails, profileImage: reader.result });
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const handleEditClick = () => setIsEditing(true);
 
 
+   const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const handleSaveClick = async () => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "profile_pictures");
+
     try {
-        const response = await updateUser(
-            updatedDetails.name,      // Pass updated name
-            updatedDetails.email,     // Pass updated email
-            updatedDetails.phone,     // Pass updated phone
-            updatedDetails.password,  // Pass updated password
-            updatedDetails.work,      // Pass updated job title
-            updatedDetails.profileImage // Pass updated profile image
-        );
-        console.log('User updated successfully:', response);
-    } catch (error) {
-        console.error('Error updating user:', error);
+        const res = await fetch("https://api.cloudinary.com/v1_1/dbslazpqx/image/upload", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+
+        // 👇 Update both updatedDetails and userDetails immediately
+        setUpdatedDetails((prev) => ({
+            ...prev,
+            profile: data.secure_url
+        }));
+
+        setUserDetails((prev) => ({
+            ...prev,
+            profile: data.secure_url
+        }));
+    } catch (err) {
+        console.error("Image upload failed:", err);
     }
 };
 
 
 
+
+    const handleEditClick = () => setIsEditing(true);
+
+    const handleSaveClick = async () => {
+        try {
+            const response = await updateUser(
+                updatedDetails.name,
+                updatedDetails.email,
+                updatedDetails.phone,
+                updatedDetails.password,
+                updatedDetails.work,
+                updatedDetails.profile
+            );
+
+            setUserDetails({ ...updatedDetails });
+            setIsEditing(false);
+            console.log('User updated successfully:', response);
+        } catch (error) {
+            console.error('Error updating user:', error);
+        }
+    };
 
     const backgroundClass = theme === 'light' ? 'bg-gray-100 text-black' : 'bg-gray-900 text-white';
     const penColor = theme === 'light' ? 'text-black' : 'text-white';
@@ -67,7 +96,7 @@ const UserProfile = () => {
                     {/* Profile Image */}
                     <div className="relative">
                         <img
-                            src={updatedDetails.profileImage}
+                            src={updatedDetails.profile}
                             alt="Profile"
                             className="w-32 h-32 object-cover rounded-full border-4 border-white shadow-md"
                         />
@@ -105,7 +134,7 @@ const UserProfile = () => {
                                     <input
                                         type={field.type}
                                         name={field.name}
-                                        value={updatedDetails[field.name]}
+                                        value={updatedDetails[field.name] || ''}
                                         onChange={handleInputChange}
                                         className={`w-full px-4 py-2 rounded mt-1 bg-gray-200 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${theme === 'dark' && 'bg-white/20 text-white placeholder:text-white/70 border-white/30'}`}
                                     />
